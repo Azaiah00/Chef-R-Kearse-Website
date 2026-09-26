@@ -1,0 +1,4 @@
+# Share previews, canonicals, and schema use SITE_URL (see src/lib/site.ts).
+# Pin the staging Netlify URL until chefrkearse.com is the live primary domain.
+[build.environment]
+  SITE_URL = "https://chef-r-kearse-website.netlify.app"

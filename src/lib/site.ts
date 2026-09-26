@@ -5,6 +5,26 @@
  * NOT rendered until it is turned on here.
  */
 
+/** Public site origin for canonicals, Open Graph, sitemap, and JSON-LD. */
+function resolveSiteUrl(): string {
+  const candidates = [
+    process.env.SITE_URL,
+    process.env.NEXT_PUBLIC_SITE_URL,
+    // Netlify sets URL to the site's primary address (e.g. *.netlify.app or custom domain).
+    process.env.URL,
+    process.env.DEPLOY_PRIME_URL,
+  ];
+
+  for (const raw of candidates) {
+    if (raw?.startsWith("http")) {
+      return raw.replace(/\/$/, "");
+    }
+  }
+
+  // Until chefrkearse.com DNS points at this deploy, keep share previews on Netlify.
+  return "https://chef-r-kearse-website.netlify.app";
+}
+
 export const site = {
   /** Legal / trading name as it appears on his Google listing and logo */
   name: "Chef R. Kearse",
@@ -15,8 +35,8 @@ export const site = {
   positioning:
     "Third-generation private chef and caterer bringing plated, restaurant-grade dinners and full-service catering to homes and venues across Richmond, Northern Virginia, Washington DC and Maryland.",
 
-  /** Replace with the live domain once DNS is pointed. Used for canonical URLs + schema. */
-  url: "https://chefrkearse.com",
+  /** Resolved at build time — see resolveSiteUrl(). Override with SITE_URL on Netlify. */
+  url: resolveSiteUrl(),
 
   founded: 2018, // Google knowledge panel: "Kearse founded his private chef and catering company in 2018."
 
