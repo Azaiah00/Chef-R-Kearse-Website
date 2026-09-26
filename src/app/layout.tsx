@@ -42,20 +42,11 @@ export const metadata: Metadata = {
     siteName: site.legalName,
     title: `${site.name} — Private Chef & Catering`,
     description: site.tagline,
-    images: [
-      {
-        url: "/images/dishes/snapper-mango-salsa-1600.webp",
-        width: 1600,
-        height: 1628,
-        alt: "Roasted fish under mango and pepper salsa, plated by Chef R. Kearse",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${site.name} — Private Chef & Catering`,
     description: site.tagline,
-    images: ["/images/dishes/snapper-mango-salsa-1600.webp"],
   },
   robots: {
     index: true,
