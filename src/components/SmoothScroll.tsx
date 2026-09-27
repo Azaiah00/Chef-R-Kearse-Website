@@ -13,7 +13,12 @@ import { loadMotion, onIdle, prefersReducedMotion } from "@/lib/motion";
  */
 export default function SmoothScroll() {
   useEffect(() => {
-    document.documentElement.classList.remove("no-js");
+    // Wait for stylesheets before dropping no-js — avoids a flash where .fade-up
+    // stays hidden if JS runs but CSS was blocked or still loading (e.g. in-app browsers).
+    const enableJs = () => document.documentElement.classList.remove("no-js");
+    if (document.readyState === "complete") enableJs();
+    else window.addEventListener("load", enableJs, { once: true });
+
     if (prefersReducedMotion()) return;
 
     let cleanup: (() => void) | undefined;

@@ -1,4 +1,10 @@
+# Next.js on Netlify — the plugin wires SSR, /_next/static assets, and API routes.
+[build]
+  command = "npm run build"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 # Share previews, canonicals, and schema use SITE_URL (see src/lib/site.ts).
-# Pin the staging Netlify URL until chefrkearse.com is the live primary domain.
 [build.environment]
   SITE_URL = "https://chef-r-kearse-website.netlify.app"
