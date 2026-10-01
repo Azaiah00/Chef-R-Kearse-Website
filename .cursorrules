@@ -1,0 +1,29 @@
+Read CLAUDE.md in the repository root before changing anything. It is the canonical
+standing-instructions file for this project and applies to every agent and tool.
+
+THE PORTAL DESIGN IS LOCKED. Navigation is a LEFT SIDEBAR (.p-sidebar in
+src/app/portal/portal.css) — sticky, 15.5rem, full height, translucent with a
+backdrop blur, collapsing to a left drawer behind a Menu button below 1024px. The
+aesthetic is modern, sleek and smooth: dark glass cards (18px radius, inset top
+highlight) over a warm radial ambient glow, 999px pill nav links and buttons, a
+double-ringed avatar, accent focus rings.
+
+Do NOT convert the nav to a top bar. Do NOT flatten the cards. Do NOT "harmonise" the
+literal radii back to the marketing site's --radius-* tokens. Do NOT redesign,
+simplify or modernise the portal. Build new features inside this language.
+
+Diff before you write: more than one agent works in this repo. Hash the files you
+intend to touch against what is on disk, adopt anything newer you did not write, and
+merge your change into it.
+
+Real facts only — never invent a phone number, address, award, review, price or
+dietary claim. Every price is a placeholder pending client confirmation. "R." is part
+of Chef R. Kearse's name and brand; never ask what it stands for.
+
+Every animation needs a prefers-reduced-motion off-ramp. No emoji anywhere in the
+product — icons come from src/components/portal/Icons.tsx.
+
+Bars: npx tsc --noEmit (0 errors), npx next lint (0 warnings), npm run build
+(0 warnings), and the five scripts in package.json / CLAUDE.md §3 all passing,
+including qa-portal.mjs reporting "No failures." at 1023px and 1024px — the two
+widths either side of the sidebar breakpoint.

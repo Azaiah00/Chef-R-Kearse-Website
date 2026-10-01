@@ -72,7 +72,7 @@ cocktails · wine.
    many said it was the best food they had ever had at a wedding."*
 2. **Beth**, Fash, 1 March 2021, 5★ — *"Every little detail was well thought out
    and the service was exceptional… EVERYTHING WAS AMAZING!!"*
-3. **James R.**, Fash, 1 March 2021, 5★ — *"Excellent Chef."*
+2. **James R.**, Fash, 1 March 2021, 5★ — *"Excellent Chef."*
 
 A fourth Fash review (Dustin, 1 March 2021, body text "Everything") was left off
 as too thin to be useful. **No review on this site is invented.**
@@ -104,6 +104,11 @@ Every item below is either unverified, or a claim the site makes softly and
 would make harder once he confirms it. None of them block launch.
 
 **Identity and credentials**
+
+> "Chef R. Kearse" is the brand, exactly as written. The initial is the mark as
+> it appears on his logo, his Instagram handle, his email and every listing.
+> It is not a question, and it is not to be asked — see CLAUDE.md.
+
 1. Is "third-generation private chef and catering professional" (his Thumbtack
    wording) how he wants it stated? Any detail on the two generations before him?
 2. Any culinary school, apprenticeships, certifications, ServSafe, awards, press
@@ -162,7 +167,141 @@ would make harder once he confirms it. None of them block launch.
     `INQUIRY_TO` in the environment to change it.
 21. Does he want a CRM / calendar integration, or is email enough to start?
 
+### Added with the portal build — the things we invented and he must ratify
+
+Everything in this section was made up on his behalf because we did not have the
+answer. None of it is a finding. All of it is changeable in one place.
+
+**The assistant**
+
+22. **Her real name and email.** "Jordan Ellis / assistant@chefrkearse.com" is a
+    placeholder in `src/lib/portal/seed.ts` and appears on her sign-in, in the
+    conversation threads and on the run-sheets.
+23. **What she actually does in a week.** Her whole dashboard is built on the
+    assumption that an events assistant's job is chasing and coordinating, so it
+    is a task queue. That is a guess. Ask her what she chases, and what she
+    wishes she did not have to, and the screen gets rebuilt around the answer.
+24. **Should she see revenue figures?** Off by default — she sees the diary, the
+    guests and the run-sheets but no quoted or booked values, no deposit amounts
+    and no money panels. The chef turns it on in Settings.
+
+**The qualification engine**
+
+25. **All nine weights and the four band thresholds.** A defensible opening
+    position, not drawn from his booking history because we do not have it.
+    Listed in full in Settings and in `PORTAL.md`. Retune after roughly thirty
+    scored enquiries.
+26. **The four budget bands on the enquiry form** — under $75, $75–125,
+    $125–200, $200+ per guest. Conventional ranges for this kind of work in this
+    market. **Not his numbers.** He confirms or replaces all four.
+27. **His real service floor**, which is what the below-floor cap keys off. An
+    enquiry under the floor is held at band B for a human to re-scope rather than
+    reaching him inside four hours.
+28. **The practical minimum party size.** Currently assumed: 6 guests for a full
+    plated service, comfortable band 12–90, above 150 needs a staffing plan.
+29. **The response standards** — 4 hours for band A, 24 hours for band B. These
+    are promises the portal will hold him to, so he should agree to them or
+    change them.
+30. **The 80-character minimum on the occasion field.** Deliberate friction that
+    filters out "how much" enquiries. Confirm he is happy to lose the people who
+    will not write two sentences.
+31. **The deposit acknowledgment wording** on the enquiry form, and whether his
+    actual terms match it — a deposit holds the date, balance before the event.
+32. **Deposit percentage and cancellation terms.** The demo shows 30%; no real
+    figure has been given.
+
+**Menus and the kitchen**
+
+33. **Course structures per service style** — what a plated dinner, family style,
+    stations and passed service actually consist of, and how many choices a guest
+    gets per course. Currently invented in `COURSE_TEMPLATES`.
+34. **Which dishes belong in which course.** Assembled from his photographs, not
+    from his menus.
+35. **Component lists and yields for the shopping and prep generator.** Derived
+    from what is *visible* in each photograph, with conventional catering
+    quantities. Not his recipes. Every generated list says so on its face until
+    he replaces them.
+36. **The prep timings** — how many hours before service each step really
+    happens. Currently conventional, not his.
+37. **The add-on list** (bartender and mobile bar, extra serving staff, wine
+    pairing, coffee, late-night bite) and what each costs.
+
+**Marketing**
+
+38. **Approve every campaign email before anything sends.** Ten finished emails
+    are in the portal written in an approximation of his voice. He should read
+    all ten — they go out under his name.
+39. **The Google review link** for the referral email, once the listing is
+    recovered. Placeholder token `{{GOOGLE_REVIEW_URL}}`.
+40. **The anecdote in wedding caption 8** references a real booking. Get the
+    couple's permission or switch to the general version.
+41. **Whether we run the marketing or he does.** Roughly forty hours a quarter to
+    run properly.
+
+**Operations**
+
+42. **Where enquiry notifications should go** once email is connected — his
+    address, the assistant's, or both.
+43. **Whether guests should be able to see prices in the menu builder.** Off
+    until real pricing is confirmed.
+
 ---
+
+### Added with the lead engine — the five that block the valuable work
+
+These are different from everything above: they are not polish, they are the
+gate. Every venue asks for them before it will add a caterer to its list, and the
+Kitchen Brain shows each one as an amber NOT CONFIRMED chip until it lands. Until
+they are answered, **no venue application can go out** — which is the highest-ROI
+work in the whole engine.
+
+They are blank rather than guessed on purpose. A letter claiming a certificate he
+does not hold is worse than one that never goes.
+
+44. **General liability insurance — carrier and limit.** Venues ask for this
+    first. One industry body (WIPA) requires $1M per occurrence to join at all.
+45. **ServSafe or food-handler certification** — who holds it, and when it
+    expires.
+46. **Business licence and health-department permits** — which jurisdictions. One
+    DC venue (Dumbarton House) requires a DC business licence specifically.
+47. **SWaM certification** with the Virginia Department of Small Business and
+    Supplier Diversity — is he certified, and if not does he want to be? This is
+    probably the single highest-leverage registration available to him.
+48. **eVA vendor registration** — registered or not. It is how every Virginia
+    public body buys, including the universities.
+
+**And these block the engine quoting anybody**
+
+49. **Real price bands by service model.** Every figure in the build is a
+    placeholder and is labelled as one. Nothing will be quoted until these land.
+50. **Travel radius, and the fee beyond it.** This drives the distance factor in
+    the prospect score, which currently falls back to a documented 40-mile
+    assumption and says so on every card.
+51. **Maximum events per week, and minimum notice.** These drive whether a
+    prospect's date is scored as workable.
+
+**One phone call each resolves these**
+
+52. **Virginia ABC, (804) 213-4577** — are banquet licences included in the
+    public licensee search or the downloadable file, and do the records carry the
+    event date and location? This is the highest-value unknown in the engine and
+    it is already sitting as an open correction on /portal/sweeps.
+53. **Maymont** — the supplemental pre-screened Approved Caterers list: criteria,
+    fee, and how to apply.
+54. **Cultural Arts Center at Glen Allen**, Christiana Roberts, (804) 261-6211 —
+    the approval criteria for the approved-caterer list. Whatever she says is
+    also the checklist for every other venue.
+55. **Science Museum of Virginia, 804.864.1466** — their preferred-caterer list
+    is referenced on their page but not published.
+56. **eVA registration fee and SWaM certification fee.** Neither is published.
+
+**Decisions only he can make**
+
+57. Does he approve outbound prospecting in his name at all? And does he want to
+    read every letter before it sends, or approve a template once?
+58. His lawyer's review of the outbound programme — TCPA and A2P 10DLC for calls
+    and texts, CAN-SPAM for email, National DNC scrubbing for consumer calls.
+    This should happen before the first campaign, not after a complaint.
 
 ## 5. Competitive picture — Richmond private chefs
 

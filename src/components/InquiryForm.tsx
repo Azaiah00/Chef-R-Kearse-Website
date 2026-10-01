@@ -5,40 +5,122 @@ import Link from "next/link";
 import { site } from "@/lib/site";
 
 /* ————————————————————————————————————————————————————————————————
-   A five-step qualifying enquiry.
+   A SIX-STEP QUALIFYING ENQUIRY
 
    Why it is built this way — the evidence, not a hunch:
    • Multi-step forms out-convert equivalent single-step forms by roughly 14%
      on average, and by more once a form passes six fields (Digital Applied,
      "Form Conversion Rate Benchmarks 2026"; Venture Harbour).
    • Conversion falls off a cliff between five and seven fields on one screen
-     (23.1% → 17.0% → 11.4%). Every step here asks for three fields or fewer.
+     (23.1% → 17.0% → 11.4%). Every step here asks for three fields or fewer,
+     and three of the six steps are taps only, with no typing at all.
    • A visible progress indicator is worth +11–15%; inline validation +5–13%;
      a visible privacy line +4–7%; correct autofill metadata on mobile +11–18%.
    • The first interaction is a single tap on a choice the visitor already knows
      the answer to — commitment before effort. Contact details are asked last,
-     once the visitor has invested four steps.
+     once the visitor has invested five steps.
+
+   ── WHAT CHANGED, AND WHY ──────────────────────────────────────────────────
+   The chef's own words: he is tired of people wasting his time and not
+   following through. So this form now does two jobs at once — it still converts
+   serious buyers, and it quietly qualifies every one of them.
+
+   Three questions do most of that work:
+     1. BUDGET. Asked as a band, never as a blank box. The single strongest
+        predictor of whether an enquiry becomes a booking, and the most humane
+        filter there is: nobody is told no by a person, they simply see the
+        shape of what this costs and decide for themselves.
+     2. WHO DECIDES. "Am I talking to the buyer" saves an entire wasted cycle.
+     3. THE OCCASION, IN THEIR OWN WORDS — and it is REQUIRED, with a real
+        minimum. This is deliberate friction. It costs a serious client forty
+        seconds and it costs a tyre-kicker the whole enquiry. Someone who writes
+        four sentences about their daughter's engagement dinner behaves nothing
+        like someone who types "how much".
+
+   Plus a plainly worded acknowledgment that dates are held with a deposit,
+   which removes the people who were never going to commit before anyone has
+   spent a phone call on them.
+
+   None of it is scored on this screen — scoring happens on the server, the
+   visitor never sees a number, and every band still gets a courteous answer.
    ———————————————————————————————————————————————————————————————— */
 
 const SERVICES = [
-  "Private dinner at home",
-  "Personal chef service",
-  "Wedding",
-  "Corporate or social event",
-  "Not sure yet",
+  { label: "Private dinner at home", value: "private-dinner" },
+  { label: "Wedding", value: "wedding" },
+  { label: "Corporate or company event", value: "corporate" },
+  { label: "Birthday, anniversary or milestone", value: "milestone" },
+  { label: "Weekly personal chef service", value: "weekly-service" },
+  { label: "Not sure yet", value: "other" },
 ] as const;
 
-const FLEX = ["That date exactly", "Within a week either side", "The month is flexible"] as const;
+const FLEX = [
+  { label: "That date exactly", value: "fixed" },
+  { label: "Within a week either side", value: "flexible" },
+  { label: "The month is flexible", value: "flexible" },
+] as const;
 
-const GUESTS = ["2", "3–6", "7–12", "13–30", "31–75", "76–150", "150+"] as const;
+/** Range label → the number the availability and scoring engines use. */
+const GUESTS = [
+  { label: "2", value: 2 },
+  { label: "3–6", value: 5 },
+  { label: "7–12", value: 10 },
+  { label: "13–30", value: 22 },
+  { label: "31–75", value: 50 },
+  { label: "76–150", value: 110 },
+  { label: "150+", value: 180 },
+] as const;
+
+const VENUES = [
+  { label: "My home", value: "my-home" },
+  { label: "A venue we've booked", value: "rented-venue" },
+  { label: "Our office", value: "office" },
+  { label: "Outdoors", value: "outdoor" },
+  { label: "Still deciding", value: "undecided" },
+] as const;
+
+/**
+ * PLACEHOLDER BANDS — pending the chef's confirmation.
+ * These ranges are conventional for private-chef and full-service catering work
+ * in this market. They are NOT his numbers, because no verified price exists for
+ * this business anywhere public. He confirms or replaces all four, and the
+ * helper line under them, before launch. Listed in CONTEXT.md.
+ */
+const BUDGETS = [
+  { label: "Under $75 a guest", value: "under-75" },
+  { label: "$75 – $125", value: "75-125" },
+  { label: "$125 – $200", value: "125-200" },
+  { label: "$200 and up", value: "200-plus" },
+  { label: "I'd like guidance on this", value: "unsure" },
+] as const;
+
+const DECISIONS = [
+  { label: "Yes, it's my call", value: "yes" },
+  { label: "I decide with someone else", value: "shared" },
+  { label: "I'm gathering options for someone else", value: "no" },
+] as const;
+
+const SOURCES = [
+  { label: "Someone recommended him", value: "referral" },
+  { label: "I've booked him before", value: "returning" },
+  { label: "Google", value: "google" },
+  { label: "Instagram", value: "instagram" },
+  { label: "A wedding site", value: "wedding-directory" },
+  { label: "I ate his food somewhere", value: "walk-past" },
+  { label: "Somewhere else", value: "other" },
+] as const;
 
 const STEP_TITLES = [
   "What kind of night is it?",
   "When are you thinking?",
-  "How many at the table?",
-  "Anything he should know?",
+  "How many, and where?",
+  "A few quick ones.",
+  "Tell him about it.",
   "Where should he send the menu?",
 ];
+
+/** Minimum characters on the occasion field. Friction, on purpose. */
+const NOTES_MIN = 80;
 
 type Values = {
   service: string;
@@ -46,8 +128,14 @@ type Values = {
   flexibility: string;
   guests: string;
   place: string;
+  venue: string;
+  budget: string;
+  decision: string;
+  foundVia: string;
   notes: string;
   dietary: string;
+  depositOk: boolean;
+  callOk: boolean;
   name: string;
   email: string;
   phone: string;
@@ -60,8 +148,14 @@ const EMPTY: Values = {
   flexibility: "",
   guests: "",
   place: "",
+  venue: "",
+  budget: "",
+  decision: "",
+  foundVia: "",
   notes: "",
   dietary: "",
+  depositOk: false,
+  callOk: false,
   name: "",
   email: "",
   phone: "",
@@ -70,6 +164,8 @@ const EMPTY: Values = {
 
 const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v.trim());
 const phoneOk = (v: string) => v.replace(/\D/g, "").length >= 10;
+
+const LAST_STEP = STEP_TITLES.length - 1;
 
 export default function InquiryForm() {
   const [step, setStep] = useState(0);
@@ -87,10 +183,12 @@ export default function InquiryForm() {
   useEffect(() => {
     const s = new URLSearchParams(window.location.search).get("service");
     if (!s) return;
+    const needle = s.toLowerCase();
     const match =
-      SERVICES.find((x) => x.toLowerCase() === s.toLowerCase()) ??
-      SERVICES.find((x) => x.toLowerCase().includes(s.toLowerCase().split(" ")[0]));
-    if (match) setV((prev) => ({ ...prev, service: match }));
+      SERVICES.find((x) => x.value === needle) ??
+      SERVICES.find((x) => x.label.toLowerCase() === needle) ??
+      SERVICES.find((x) => x.label.toLowerCase().includes(needle.split(" ")[0]));
+    if (match) setV((prev) => ({ ...prev, service: match.value }));
   }, []);
 
   // Move focus to the new step heading so screen readers and keyboard users
@@ -104,7 +202,7 @@ export default function InquiryForm() {
     if (state === "idle") headingRef.current?.focus();
   }, [step, state]);
 
-  const set = (k: keyof Values, val: string) => {
+  const set = <K extends keyof Values>(k: K, val: Values[K]) => {
     setV((prev) => ({ ...prev, [k]: val }));
     setErrors((e) => ({ ...e, [k]: undefined }));
   };
@@ -119,11 +217,26 @@ export default function InquiryForm() {
     if (s === 2) {
       if (!v.guests) e.guests = "A rough headcount is fine.";
       if (!v.place.trim()) e.place = "City, neighbourhood or ZIP.";
+      if (!v.venue) e.venue = "Where are you thinking of holding it?";
+    }
+    if (s === 3) {
+      if (!v.budget) e.budget = "A range is all he needs — it shapes the menu, not the welcome.";
+      if (!v.decision) e.decision = "Just so he knows who he is talking to.";
+      if (!v.foundVia) e.foundVia = "How did you come across him?";
     }
     if (s === 4) {
+      const len = v.notes.trim().length;
+      if (len === 0) {
+        e.notes = "A few sentences, in your own words — this is the part he actually reads.";
+      } else if (len < NOTES_MIN) {
+        e.notes = `A little more, please — around ${NOTES_MIN - len} more characters. The more he knows, the better the menu he comes back with.`;
+      }
+    }
+    if (s === LAST_STEP) {
       if (!v.name.trim()) e.name = "What should he call you?";
       if (!emailOk(v.email)) e.email = "A working email address, please.";
       if (!phoneOk(v.phone)) e.phone = "A number he can reach you on.";
+      if (!v.depositOk) e.depositOk = "Please confirm you have read how dates are held.";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -131,19 +244,44 @@ export default function InquiryForm() {
 
   const next = () => {
     if (!validate(step)) return;
-    setStep((s) => Math.min(s + 1, STEP_TITLES.length - 1));
+    setStep((s) => Math.min(s + 1, LAST_STEP));
   };
   const back = () => setStep((s) => Math.max(0, s - 1));
 
   const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
-    if (!validate(4)) return;
+    if (!validate(LAST_STEP)) return;
     setState("sending");
     try {
+      const guestCount = GUESTS.find((g) => g.label === v.guests)?.value ?? 0;
       const res = await fetch("/api/inquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...v, elapsedMs: Date.now() - startedAt.current }),
+        body: JSON.stringify({
+          // Human-readable fields, kept for the email that reaches the chef.
+          service: SERVICES.find((s) => s.value === v.service)?.label ?? v.service,
+          guests: v.guests,
+          place: v.place,
+          date: v.date,
+          flexibility: v.flexibility,
+          notes: v.notes,
+          dietary: v.dietary,
+          name: v.name,
+          email: v.email,
+          phone: v.phone,
+          company: v.company,
+          // Structured fields, for scoring and the portal record.
+          eventType: v.service,
+          guestCount,
+          venueType: v.venue,
+          budgetBand: v.budget,
+          decisionMaker: v.decision,
+          source: v.foundVia,
+          dateFlexible: v.flexibility !== "fixed",
+          depositOk: v.depositOk,
+          callOk: v.callOk,
+          elapsedMs: Date.now() - startedAt.current,
+        }),
       });
       if (!res.ok) throw new Error(String(res.status));
       setState("done");
@@ -157,10 +295,7 @@ export default function InquiryForm() {
     }
   };
 
-  const progress = useMemo(
-    () => Math.round(((step + 1) / STEP_TITLES.length) * 100),
-    [step]
-  );
+  const progress = useMemo(() => Math.round(((step + 1) / STEP_TITLES.length) * 100), [step]);
 
   if (state === "done") {
     return (
@@ -195,6 +330,8 @@ export default function InquiryForm() {
     );
   }
 
+  const notesLen = v.notes.trim().length;
+
   return (
     <form onSubmit={submit} noValidate className="border border-line bg-paper">
       {/* Progress */}
@@ -221,11 +358,7 @@ export default function InquiryForm() {
       </div>
 
       <div className="px-6 py-9 md:px-10 md:py-12">
-        <h2
-          ref={headingRef}
-          tabIndex={-1}
-          className="t-h3 max-w-[20ch] outline-none"
-        >
+        <h2 ref={headingRef} tabIndex={-1} className="t-h3 max-w-[20ch] outline-none">
           {STEP_TITLES[step]}
         </h2>
 
@@ -236,16 +369,16 @@ export default function InquiryForm() {
             <div className="flex flex-wrap gap-3">
               {SERVICES.map((s) => (
                 <button
-                  key={s}
+                  key={s.value}
                   type="button"
                   className="chip"
-                  aria-pressed={v.service === s}
+                  aria-pressed={v.service === s.value}
                   onClick={() => {
-                    set("service", s);
+                    set("service", s.value);
                     window.setTimeout(() => setStep(1), 160);
                   }}
                 >
-                  {s}
+                  {s.label}
                 </button>
               ))}
             </div>
@@ -286,13 +419,13 @@ export default function InquiryForm() {
               <div className="mt-3 flex flex-wrap gap-3">
                 {FLEX.map((f) => (
                   <button
-                    key={f}
+                    key={f.label}
                     type="button"
                     className="chip"
-                    aria-pressed={v.flexibility === f}
-                    onClick={() => set("flexibility", f)}
+                    aria-pressed={v.flexibility === f.label}
+                    onClick={() => set("flexibility", f.label)}
                   >
-                    {f}
+                    {f.label}
                   </button>
                 ))}
               </div>
@@ -303,7 +436,7 @@ export default function InquiryForm() {
           </div>
         )}
 
-        {/* ————— Step 3: guests + place ————— */}
+        {/* ————— Step 3: guests + place + venue ————— */}
         {step === 2 && (
           <div className="mt-8 space-y-7">
             <fieldset className="border-0 p-0">
@@ -311,22 +444,40 @@ export default function InquiryForm() {
               <div className="mt-3 flex flex-wrap gap-3">
                 {GUESTS.map((g) => (
                   <button
-                    key={g}
+                    key={g.label}
                     type="button"
                     className="chip min-w-[4.5rem]"
-                    aria-pressed={v.guests === g}
-                    onClick={() => set("guests", g)}
+                    aria-pressed={v.guests === g.label}
+                    onClick={() => set("guests", g.label)}
                   >
-                    {g}
+                    {g.label}
                   </button>
                 ))}
               </div>
               {errors.guests && <p className="mt-3 text-sm text-danger">{errors.guests}</p>}
             </fieldset>
 
+            <fieldset className="border-0 p-0">
+              <legend className="t-label text-muted">Where would it be?</legend>
+              <div className="mt-3 flex flex-wrap gap-3">
+                {VENUES.map((b) => (
+                  <button
+                    key={b.value}
+                    type="button"
+                    className="chip"
+                    aria-pressed={v.venue === b.value}
+                    onClick={() => set("venue", b.value)}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+              {errors.venue && <p className="mt-3 text-sm text-danger">{errors.venue}</p>}
+            </fieldset>
+
             <div>
               <label htmlFor="place" className="t-label block text-muted">
-                Where
+                Which town or city
               </label>
               <input
                 id="place"
@@ -350,22 +501,113 @@ export default function InquiryForm() {
           </div>
         )}
 
-        {/* ————— Step 4: notes (optional) ————— */}
+        {/* ————— Step 4: qualification. All taps, no typing. ————— */}
         {step === 3 && (
+          <div className="mt-8 space-y-7">
+            <fieldset className="border-0 p-0">
+              <legend className="t-label text-muted">
+                Roughly what are you working with, per guest?
+              </legend>
+              <div className="mt-3 flex flex-wrap gap-3">
+                {BUDGETS.map((b) => (
+                  <button
+                    key={b.value}
+                    type="button"
+                    className="chip"
+                    aria-pressed={v.budget === b.value}
+                    onClick={() => set("budget", b.value)}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+              {errors.budget && <p className="mt-3 text-sm text-danger">{errors.budget}</p>}
+              <p className="t-small mt-4 max-w-[52ch] text-muted">
+                Nobody is quoted from a dropdown — every menu is priced on what it actually
+                takes. This just tells him whether to be thinking plated and multi-course or
+                family style, so the first thing he sends you is useful.
+              </p>
+            </fieldset>
+
+            <fieldset className="border-0 p-0">
+              <legend className="t-label text-muted">Is the decision yours?</legend>
+              <div className="mt-3 flex flex-wrap gap-3">
+                {DECISIONS.map((d) => (
+                  <button
+                    key={d.value}
+                    type="button"
+                    className="chip"
+                    aria-pressed={v.decision === d.value}
+                    onClick={() => set("decision", d.value)}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+              {errors.decision && <p className="mt-3 text-sm text-danger">{errors.decision}</p>}
+            </fieldset>
+
+            <fieldset className="border-0 p-0">
+              <legend className="t-label text-muted">How did you find him?</legend>
+              <div className="mt-3 flex flex-wrap gap-3">
+                {SOURCES.map((s) => (
+                  <button
+                    key={s.value}
+                    type="button"
+                    className="chip"
+                    aria-pressed={v.foundVia === s.value}
+                    onClick={() => set("foundVia", s.value)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+              {errors.foundVia && <p className="mt-3 text-sm text-danger">{errors.foundVia}</p>}
+            </fieldset>
+          </div>
+        )}
+
+        {/* ————— Step 5: the occasion. Required, with a real minimum. ————— */}
+        {step === 4 && (
           <div className="mt-8 space-y-7">
             <div>
               <label htmlFor="notes" className="t-label block text-muted">
-                The night, in your words <span className="normal-case">(optional)</span>
+                The night, in your words
               </label>
+              <p className="t-small mt-2 max-w-[54ch] text-muted">
+                What the occasion is, who is coming, what you want the evening to feel like,
+                anything you have loved or hated at other dinners. This is the part he reads
+                before anything else, and it is what he builds the menu from.
+              </p>
               <textarea
                 id="notes"
                 name="notes"
+                rows={5}
                 className="field mt-3"
-                placeholder="Anniversary dinner for six, we love seafood, my wife hates cilantro…"
+                placeholder="It's my parents' fortieth anniversary. Fourteen of us at our place in Glen Allen, mostly family, everyone loves seafood except my brother. We want it to feel like a proper dinner party rather than a catered thing — people staying at the table talking."
                 value={v.notes}
                 onChange={(e) => set("notes", e.target.value)}
+                aria-invalid={!!errors.notes}
+                aria-describedby="notes-count"
+                required
               />
+              <div className="mt-2 flex flex-wrap items-baseline justify-between gap-3">
+                {errors.notes ? (
+                  <p className="text-sm text-danger">{errors.notes}</p>
+                ) : (
+                  <span />
+                )}
+                <p
+                  id="notes-count"
+                  className={`t-small tabular-nums ${notesLen >= NOTES_MIN ? "text-muted" : "text-danger"}`}
+                >
+                  {notesLen < NOTES_MIN
+                    ? `${NOTES_MIN - notesLen} more characters`
+                    : "That's plenty — thank you"}
+                </p>
+              </div>
             </div>
+
             <div>
               <label htmlFor="dietary" className="t-label block text-muted">
                 Allergies or dietary needs <span className="normal-case">(optional)</span>
@@ -379,16 +621,17 @@ export default function InquiryForm() {
                 value={v.dietary}
                 onChange={(e) => set("dietary", e.target.value)}
               />
-              <p className="t-small mt-3 text-muted">
-                Allergies are planned with the chef directly. He cooks in shared kitchens,
-                so no dish can be guaranteed free of cross-contamination.
+              <p className="t-small mt-3 max-w-[54ch] text-muted">
+                Allergies are planned with the chef directly, and you will be able to list every
+                guest properly once you are booked. He cooks in shared kitchens, so no dish can be
+                guaranteed free of cross-contamination.
               </p>
             </div>
           </div>
         )}
 
-        {/* ————— Step 5: contact ————— */}
-        {step === 4 && (
+        {/* ————— Step 6: contact + the deposit acknowledgment ————— */}
+        {step === LAST_STEP && (
           <div className="mt-8 space-y-6">
             <div>
               <label htmlFor="name" className="t-label block text-muted">
@@ -468,6 +711,52 @@ export default function InquiryForm() {
               </div>
             </div>
 
+            {/*
+              The deposit acknowledgment. This one checkbox removes more wasted
+              time than any other single thing on the form, and it does it by
+              being honest rather than by being a barrier.
+            */}
+            <div className="border border-line bg-bone-2/60 px-5 py-4">
+              <label htmlFor="depositOk" className="flex cursor-pointer items-start gap-3">
+                <input
+                  id="depositOk"
+                  name="depositOk"
+                  type="checkbox"
+                  checked={v.depositOk}
+                  onChange={(e) => set("depositOk", e.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-[color:var(--color-accent)]"
+                  aria-invalid={!!errors.depositOk}
+                  aria-describedby={errors.depositOk ? "deposit-err" : undefined}
+                  required
+                />
+                <span className="text-sm leading-relaxed">
+                  I understand a date is held with a deposit, and the balance is settled before
+                  the event. Chef Kearse turns down other work to hold a date, so it is only
+                  really yours once the deposit is in.
+                </span>
+              </label>
+              {errors.depositOk && (
+                <p id="deposit-err" className="mt-2 text-sm text-danger">
+                  {errors.depositOk}
+                </p>
+              )}
+
+              <label htmlFor="callOk" className="mt-4 flex cursor-pointer items-start gap-3">
+                <input
+                  id="callOk"
+                  name="callOk"
+                  type="checkbox"
+                  checked={v.callOk}
+                  onChange={(e) => set("callOk", e.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-[color:var(--color-accent)]"
+                />
+                <span className="text-sm leading-relaxed text-muted">
+                  Happy to take a ten-minute call — it is usually faster than email for working
+                  out a menu. <span className="normal-case">(optional)</span>
+                </span>
+              </label>
+            </div>
+
             {/* Honeypot — hidden from people, irresistible to bots */}
             <div aria-hidden="true" className="absolute left-[-9999px] h-px w-px overflow-hidden">
               <label htmlFor="company">Company</label>
@@ -506,7 +795,9 @@ export default function InquiryForm() {
             {v.service && (
               <li>
                 <p className="t-label text-muted">Service</p>
-                <p className="mt-1 text-sm">{v.service}</p>
+                <p className="mt-1 text-sm">
+                  {SERVICES.find((s) => s.value === v.service)?.label ?? v.service}
+                </p>
               </li>
             )}
             {v.date && (
@@ -527,6 +818,14 @@ export default function InquiryForm() {
                 <p className="mt-1 text-sm">{v.place}</p>
               </li>
             )}
+            {v.budget && (
+              <li>
+                <p className="t-label text-muted">Per guest</p>
+                <p className="mt-1 text-sm">
+                  {BUDGETS.find((b) => b.value === v.budget)?.label ?? v.budget}
+                </p>
+              </li>
+            )}
           </ul>
         )}
 
@@ -537,27 +836,18 @@ export default function InquiryForm() {
               Back
             </button>
           )}
-          {step < 4 && (
+          {step < LAST_STEP && (
             <button type="button" onClick={next} className="btn btn-primary sm:min-w-[14rem]">
-              {step === 3 ? "Almost done" : "Continue"}
+              {step === LAST_STEP - 1 ? "Almost done" : "Continue"}
             </button>
           )}
-          {step === 4 && (
+          {step === LAST_STEP && (
             <button
               type="submit"
               disabled={state === "sending"}
               className="btn btn-primary sm:min-w-[16rem] disabled:opacity-60"
             >
               {state === "sending" ? "Sending…" : "Send it to the chef"}
-            </button>
-          )}
-          {step === 3 && (
-            <button
-              type="button"
-              onClick={() => setStep(4)}
-              className="t-label self-center text-muted underline underline-offset-4"
-            >
-              Skip this
             </button>
           )}
         </div>

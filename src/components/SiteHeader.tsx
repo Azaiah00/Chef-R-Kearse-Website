@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { navLinks, site } from "@/lib/site";
+import { isDemoMode } from "@/lib/portal/demo";
 
 /** Routes that open with a full-bleed dark hero the header can sit on top of. */
 const HERO_ROUTES = new Set(["/", "/weddings", "/gallery"]);
@@ -82,7 +83,7 @@ export default function SiteHeader() {
               <Link
                 key={l.href}
                 href={l.href}
-                className={`link-underline t-label transition-colors ${
+                className={`link-underline tap t-label transition-colors ${
                   light ? "text-bone" : "text-ink"
                 } ${pathname === l.href ? "text-accent" : ""}`}
               >
@@ -94,12 +95,52 @@ export default function SiteHeader() {
           <div className="flex items-center gap-3">
             <a
               href={`tel:${site.contact.phoneHref}`}
-              className={`hidden text-[0.8125rem] font-medium tracking-wide xl:block ${
+              className={`tap-sm hidden text-[0.8125rem] font-medium tracking-wide xl:block ${
                 light ? "text-bone" : "text-ink"
               }`}
             >
               {site.contact.phone}
             </a>
+            {/*
+              PORTAL ENTRY — demonstration only.
+
+              The header is fixed, so this is the one place a control is on
+              screen at every moment, which is what makes it usable mid-demo
+              without hunting. It sits BEFORE the primary call to action and is
+              deliberately quieter than it, so "Check your date" is still
+              unmistakably the one thing the page is asking a guest to do.
+
+              Set NEXT_PUBLIC_DEMO_MODE=false to remove it. That is a launch
+              step: a guest looking for a table has no business being offered a
+              staff sign-in. The footer's "Staff sign in" block stays either way
+              — that one is permanent and correct for a live site.
+            */}
+            {isDemoMode() ? (
+              <Link
+                href="/portal/login"
+                title="Staff portal — demonstration"
+                className={`tap-sm hidden items-center gap-1.5 border px-3 text-[0.6875rem] font-semibold tracking-[0.14em] uppercase transition-colors sm:inline-flex ${
+                  light
+                    ? "border-bone/35 text-bone hover:border-accent-soft hover:text-accent-soft"
+                    : "border-line text-ink hover:border-accent hover:text-accent"
+                }`}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5"
+                >
+                  <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
+                  <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+                </svg>
+                Portal
+              </Link>
+            ) : null}
             <Link
               href="/book"
               className="btn btn-primary !min-h-[44px] !px-4 text-[0.6875rem] md:!min-h-[48px] md:!px-6 md:text-[0.75rem]"
@@ -169,6 +210,27 @@ export default function SiteHeader() {
             <Link href="/book" className="btn btn-primary w-full">
               Check your date
             </Link>
+            {/* The header's Portal control is hidden on a phone to keep the bar
+                uncrowded, so the mobile menu carries it instead — the demo gets
+                shown on a phone as often as on a laptop. */}
+            {isDemoMode() ? (
+              <Link href="/portal/login" className="btn btn-ghost w-full">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  className="h-4 w-4"
+                >
+                  <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
+                  <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+                </svg>
+                Staff sign in
+              </Link>
+            ) : null}
             <div className="flex flex-col gap-1 text-center">
               <a href={`tel:${site.contact.phoneHref}`} className="text-lg">
                 {site.contact.phone}

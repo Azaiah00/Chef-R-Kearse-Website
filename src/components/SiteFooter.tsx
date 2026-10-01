@@ -137,7 +137,50 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col gap-4 border-t border-line-dark pt-8 text-muted-dark md:flex-row md:items-center md:justify-between">
+        {/*
+          Staff sign-in.
+
+          Deliberately in the footer rather than the header: guests have no use
+          for it, and a "Staff login" button next to "Reserve" muddies the one
+          action the page is asking for. But it is a real bordered button in its
+          own block, not a text link buried in a list — the chef and his
+          assistant have to find it without being told where to look, on a phone,
+          possibly for the first time.
+        */}
+        <div className="mt-16 border-t border-line-dark pt-8">
+          <div className="flex flex-col gap-4 border border-line-dark px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div>
+              <p className="t-label text-accent">For the team</p>
+              <p className="t-serif-italic mt-2 text-xl leading-snug text-bone">
+                The Kitchen Office
+              </p>
+              <p className="t-small mt-1 max-w-md text-muted-dark">
+                Bookings, guests, menus and marketing — all in one place.
+              </p>
+            </div>
+            <Link
+              href="/portal/login"
+              className="btn btn-ghost-light shrink-0 justify-center whitespace-nowrap"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                className="h-4 w-4"
+              >
+                <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
+                <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+              </svg>
+              Staff sign in
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-col gap-4 border-t border-line-dark pt-8 text-muted-dark md:flex-row md:items-center md:justify-between">
           <p className="t-small">
             &copy; {new Date().getFullYear()} {site.legalName}. All rights reserved.
           </p>

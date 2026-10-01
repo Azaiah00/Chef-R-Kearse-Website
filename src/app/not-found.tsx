@@ -41,7 +41,7 @@ export default function NotFound() {
         <ul className="mt-14 flex flex-wrap gap-x-8 gap-y-3 border-t border-line-dark pt-8">
           {navLinks.map((l) => (
             <li key={l.href}>
-              <Link href={l.href} className="link-underline t-label text-bone/70">
+              <Link href={l.href} className="link-underline tap t-label text-bone/70">
                 {l.label}
               </Link>
             </li>
@@ -49,7 +49,7 @@ export default function NotFound() {
           <li>
             <a
               href={`tel:${site.contact.phoneHref}`}
-              className="link-underline t-label text-accent"
+              className="link-underline tap t-label text-accent"
             >
               Call {site.contact.phone}
             </a>

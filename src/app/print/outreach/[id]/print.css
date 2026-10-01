@@ -1,0 +1,139 @@
+/**
+ * PRINT STYLES
+ *
+ * Scoped to the print route. The portal theme is dark glass, which is right for a
+ * screen in a kitchen and completely wrong on paper — printing it would use half a
+ * cartridge and arrive looking like a dashboard rather than a letter.
+ *
+ * So this route resets to white paper and black ink, on screen as well as in
+ * print, so what you see before you press Print is what comes out.
+ *
+ * It is NOT inside @layer components. These rules have to beat the portal theme,
+ * and the portal's own CSS is layered — which means unlayered rules here win
+ * without a single !important.
+ */
+
+.print-page {
+  min-height: 100dvh;
+  background: #fff;
+  color: #111;
+  padding: 2rem 1.25rem 3rem;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 11pt;
+  line-height: 1.55;
+}
+
+.print-sheet {
+  max-width: 44rem;
+  margin-inline: auto;
+}
+
+.print-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid #111;
+}
+
+.print-name {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  color: #111;
+}
+
+.print-meta {
+  font-size: 9.5pt;
+  line-height: 1.45;
+  text-align: right;
+  color: #444;
+}
+
+.print-date {
+  margin-top: 1.6rem;
+  color: #444;
+}
+
+.print-to {
+  margin-top: 1.4rem;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.print-subject {
+  margin-top: 1.6rem;
+  font-weight: 600;
+}
+
+.print-body {
+  margin-top: 1rem;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.6;
+}
+
+.print-foot-note {
+  max-width: 44rem;
+  margin: 2.5rem auto 0;
+  font-size: 9.5pt;
+}
+.print-foot-note a {
+  color: #555;
+  text-decoration: underline;
+}
+
+/* The on-screen controls. */
+.print-controls {
+  max-width: 44rem;
+  margin: 0 auto 1.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1px solid #111;
+  border-radius: 999px;
+  background: #fff;
+  color: #111;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.print-btn-primary {
+  background: #111;
+  color: #fff;
+}
+.print-hint {
+  font-size: 9.5pt;
+  color: #555;
+}
+
+@media print {
+  /* The controls and the back link are screen furniture, not part of the letter. */
+  .print-controls,
+  .print-foot-note {
+    display: none;
+  }
+  .print-page {
+    padding: 0;
+  }
+  .print-sheet {
+    max-width: none;
+  }
+  /* Keep the body from breaking awkwardly across pages where the printer allows. */
+  .print-body {
+    orphans: 3;
+    widows: 3;
+  }
+}

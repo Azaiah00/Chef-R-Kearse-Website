@@ -664,3 +664,64 @@ textarea.field {
     border-color: var(--color-accent-soft);
   }
 }
+
+/* ============================================================================
+   SCROLLBARS
+   Branded, never the browser default grey. The public site gets a bone track
+   with a crimson-tinted thumb; the portal inverts to ink. Firefox gets
+   scrollbar-color, WebKit and Blink get the pseudo-elements, and both are
+   width-stable so nothing shifts when a scrollbar appears.
+   ========================================================================== */
+
+@layer base {
+  html {
+    scrollbar-color: var(--color-accent-lo) var(--color-bone-2);
+    scrollbar-width: thin;
+  }
+
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-bone-2);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      var(--color-accent-lo),
+      color-mix(in srgb, var(--color-accent-lo) 78%, var(--color-ink))
+    );
+    border: 3px solid var(--color-bone-2);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent);
+  }
+  ::-webkit-scrollbar-corner {
+    background: var(--color-bone-2);
+  }
+
+  /* Portal and any dark surface: ink track, lifted crimson thumb. */
+  .portal-root,
+  .portal-root * ,
+  .dark-section,
+  .dark-section * {
+    scrollbar-color: var(--color-accent-soft) var(--color-ink-2);
+  }
+  .portal-root ::-webkit-scrollbar-track,
+  .dark-section ::-webkit-scrollbar-track,
+  .portal-root ::-webkit-scrollbar-corner,
+  .dark-section ::-webkit-scrollbar-corner {
+    background: var(--color-ink-2);
+  }
+  .portal-root ::-webkit-scrollbar-thumb,
+  .dark-section ::-webkit-scrollbar-thumb {
+    background: var(--color-accent);
+    border-color: var(--color-ink-2);
+  }
+  .portal-root ::-webkit-scrollbar-thumb:hover,
+  .dark-section ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-soft);
+  }
+}

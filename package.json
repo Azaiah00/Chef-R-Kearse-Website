@@ -10,7 +10,16 @@
     "qa": "node scripts/shots.mjs",
     "qa:motion": "MODE=motion node scripts/shots.mjs",
     "qa:cls": "node scripts/cls2.mjs http://localhost:3000/",
-    "qa:fonts": "node scripts/measure-fonts.mjs http://localhost:3000/"
+    "qa:fonts": "node scripts/measure-fonts.mjs http://localhost:3000/",
+    "test:scoring": "node scripts/test-scoring.mjs",
+    "test:prospects": "node scripts/test-prospect-scoring.mjs",
+    "test:portal": "node scripts/test-portal.mjs",
+    "test:pipeline": "node scripts/test-pipeline.mjs",
+    "test:lead-engine": "node scripts/test-lead-engine.mjs",
+    "test:feeds": "node scripts/test-feed-parse.mjs",
+    "sweep": "node scripts/sweep.mjs",
+    "qa:portal": "node scripts/qa-portal.mjs",
+    "qa:entry": "node scripts/verify-portal-entry.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.2.6",

@@ -2,17 +2,7 @@ import type { Metadata, Viewport } from "next";
 // Fonts are declared directly in globals.css from files in /public/fonts —
 // latin subsets only, self-hosted, no third-party request.
 import "./globals.css";
-import SiteHeader from "@/components/SiteHeader";
-import SiteFooter from "@/components/SiteFooter";
-import MobileCtaBar from "@/components/MobileCtaBar";
-import SmoothScroll from "@/components/SmoothScroll";
 import { site } from "@/lib/site";
-import {
-  jsonLd,
-  localBusinessSchema,
-  organizationSchema,
-  websiteSchema,
-} from "@/lib/schema";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -86,22 +76,23 @@ export default function RootLayout({
           href="/fonts/inter-latin-wght-normal.woff2"
           crossOrigin="anonymous"
         />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(
-              jsonLd(organizationSchema(), localBusinessSchema(), websiteSchema())
-            ),
-          }}
-        />
       </head>
-      <body className="has-mobile-bar">
-        <SmoothScroll />
-        <SiteHeader />
-        <main id="main">{children}</main>
-        <SiteFooter />
-        <MobileCtaBar />
-      </body>
+      {/*
+        The root shell only. Fonts and the document itself.
+
+        The site header, footer, mobile bar, smooth scrolling and the
+        LocalBusiness structured data all live in src/app/(site)/layout.tsx,
+        because a root layout wraps EVERY route — including the staff portal and
+        the guests' private event pages, none of which should carry the
+        marketing chrome or a restaurant schema.
+
+        Smooth scroll in particular: Lenis is right for an editorial page you
+        read top to bottom, and wrong for an operations tool. It intercepts the
+        wheel, which fights the pipeline board's horizontal scroller, and it
+        added a phantom 74px of horizontal page scroll on that route. The portal
+        uses native scrolling.
+      */}
+      <body>{children}</body>
     </html>
   );
 }

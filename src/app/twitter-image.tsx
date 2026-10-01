@@ -28,7 +28,6 @@ export default async function TwitterImage() {
         }}
       >
         {/* ImageResponse only supports native img for embedded assets. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={logoSrc}
           width={920}
